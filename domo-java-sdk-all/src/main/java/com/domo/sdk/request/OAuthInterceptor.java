@@ -5,17 +5,12 @@ import okhttp3.Credentials;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
-import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.logging.HttpLoggingInterceptor;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
-
-import static java.util.stream.Collectors.toList;
 
 public class OAuthInterceptor implements Interceptor {
     private final AtomicReference<String> accessToken = new AtomicReference<String>("starterTokenThatIsInvalid");
@@ -101,10 +96,12 @@ public class OAuthInterceptor implements Interceptor {
     private int refreshToken() {
         HttpUrl url = urlBuilder.fromPathSegments("oauth/token")
                 .build();
-
-        String scopes = config.get().getScopes()
-                .stream().map(s -> s.name().toLowerCase())
-                .collect(Collectors.joining(" "));
+        StringBuilder stringBuilder  = new StringBuilder();
+        for(Scope scope:config.get().getScopes()){
+            stringBuilder.append(scope.name().toLowerCase());
+            stringBuilder.append(" ");
+        }
+        String scopes = stringBuilder.toString();
 
         Request request = new Request.Builder()
                 .header("Authorization", Credentials.basic(config.get().getClientId(), config.get().getSecret()))
